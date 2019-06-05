@@ -1,0 +1,25 @@
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = MypreBootLoaderApplication
+  FILE_GUID                      = 7c9907ef-85a1-46e1-ae03-96438ea58d60
+  MODULE_TYPE                    = UEFI_APPLICATION
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = UefiMain
+
+  UEFI_HII_RESOURCE_SECTION      = TRUE
+
+[Sources]
+  MyGraphicApplication.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+
+[LibraryClasses]
+  UefiApplicationEntryPoint
+  UefiLib
+  
+
+
+
+
