@@ -1,10 +1,12 @@
 #include <Uefi.h>
 #include <Library/UefiLib.h>
-#include <Protocol/SimpleFileSystem.h>
 #include <Protocol/BlockIo.h>
 #include <Library/DevicePathLib.h>
 #include <Protocol/LoadedImage.h>
 
+//  
+//  Simplificiation de la structure EFI_BOOT_SERVICES par un identificateur
+//
 extern EFI_BOOT_SERVICES *gBS;
 
 EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE* SystemTable)
@@ -15,18 +17,61 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE* Syste
 	EFI_DEVICE_PATH_PROTOCOL  *DevicePath, *FilePath;
 	UINTN i, Nb;
 
+	//  
+	//  Chaine de caractere concernant le chmin de GRUB (cas de Manjaro)
+	//
 	const CHAR16 *FileName = L"EFI\\Manjaro\\grubx64.efi";
 
-	gBS->LocateHandleBuffer(ByProtocol, &BlockIoGuid, NULL, &Nb,&HandlesFS);
+    //  
+    //  On localise notre liste de Handle BlockIo qui reprensente les partitions
+    //
+	Status = gBS->LocateHandleBuffer(ByProtocol, &BlockIoGuid, NULL, &Nb,&HandlesFS);
+	if (EFI_ERROR(Status))
+	{
+		Print(L"ERROR (main): Impossible de recupérer la liste des handles du protocole BlockIO\n");
+		return Status;
+	}
 	for(i=0;i<Nb;i++)
 	{
-			Status = gBS->OpenProtocol(HandlesFS[i], &gEfiDevicePathProtocolGuid, (VOID **)&DevicePath, ImageHandle, NULL, EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
-			if (!EFI_ERROR(Status))
+		//  
+		//  Si possible on recupere le du chemin
+		//
+		Status = gBS->OpenProtocol(HandlesFS[i], &gEfiDevicePathProtocolGuid, (VOID **)&DevicePath, ImageHandle, NULL, EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
+		if (!EFI_ERROR(Status))
+		{
+			//  
+			//  On va tester le chemin sur chacune des partitions
+			//
+			Status = gBS->LocateDevicePath(&BlockIoGuid, &DevicePath, &DeviceHandle);
+			if (EFI_ERROR(Status))
 			{
-				gBS->LocateDevicePath(&BlockIoGuid, &DevicePath, &DeviceHandle);
-				FilePath = FileDevicePath(HandlesFS[i], FileName);
-				gBS->LoadImage(FALSE, ImageHandle, FilePath, NULL, 0, &HandleLoad);
-				gBS->StartImage(HandleLoad, NULL, NULL);
+				Print(L"ERROR (main): Impossible de recuperer le DevicePath\n");
+				return Status;
+			}
+			
+			FilePath = FileDevicePath(HandlesFS[i], FileName);
+			if (EFI_ERROR(Status))
+			{
+				Print(L"ERROR (main): Impossible de recupérer le chemin\n");
+				return Status;
+			}
+			
+			//  
+			//  On charge notre objet en memoire et on le demarre
+			//
+			Status = gBS->LoadImage(FALSE, ImageHandle, FilePath, NULL, 0, &HandleLoad);
+			if (EFI_ERROR(Status))
+			{
+				Print(L"ERROR (main): Impossible de charger l'image en memoire\n");
+				return Status;
+			}
+			
+			Status = gBS->StartImage(HandleLoad, NULL, NULL);
+			if (EFI_ERROR(Status))
+			{
+				Print(L"ERROR (main): Impossible de demarrer l'image en memoire\n");
+				return Status;
+			}
 		}
 
 	}
