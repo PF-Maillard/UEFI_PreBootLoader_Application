@@ -18,12 +18,12 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE* Syste
 	UINTN i, Nb;
 
 	//  
-	//  Chaine de caractere concernant le chmin de GRUB (cas de Manjaro)
+	//  Chaine de caractere concernant le chemin de GRUB (cas de Manjaro)
 	//
 	const CHAR16 *FileName = L"EFI\\Manjaro\\grubx64.efi";
 
     //  
-    //  On localise notre liste de Handle BlockIo qui reprensente les partitions
+    //  On localise notre liste de handles BlockIo qui representent les partitions
     //
 	Status = gBS->LocateHandleBuffer(ByProtocol, &BlockIoGuid, NULL, &Nb,&HandlesFS);
 	if (EFI_ERROR(Status))
@@ -34,7 +34,7 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE* Syste
 	for(i=0;i<Nb;i++)
 	{
 		//  
-		//  Si possible on recupere le du chemin
+		//  Si possible, on recupere le du chemin
 		//
 		Status = gBS->OpenProtocol(HandlesFS[i], &gEfiDevicePathProtocolGuid, (VOID **)&DevicePath, ImageHandle, NULL, EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
 		if (!EFI_ERROR(Status))
