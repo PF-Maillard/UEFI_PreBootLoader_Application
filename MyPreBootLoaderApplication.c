@@ -5,7 +5,7 @@
 #include <Protocol/LoadedImage.h>
 
 //  
-//  Simplificiation de la structure EFI_BOOT_SERVICES par un identificateur
+//  Simplification of the EFI_BOOT_SERVICES structure by an identifier
 //
 extern EFI_BOOT_SERVICES *gBS;
 
@@ -18,12 +18,12 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE* Syste
 	UINTN i, Nb;
 
 	//  
-	//  Chaine de caractere concernant le chemin de GRUB (cas de Manjaro)
+	//  Character string for the GRUB path (Manjaro)
 	//
 	const CHAR16 *FileName = L"EFI\\Manjaro\\grubx64.efi";
 
     //  
-    //  On localise notre liste de handles BlockIo qui representent les partitions
+    //  We locate our list of BlockIo handles that represent the partitions
     //
 	Status = gBS->LocateHandleBuffer(ByProtocol, &BlockIoGuid, NULL, &Nb,&HandlesFS);
 	if (EFI_ERROR(Status))
@@ -34,13 +34,13 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE* Syste
 	for(i=0;i<Nb;i++)
 	{
 		//  
-		//  Si possible, on recupere le du chemin
+		//  If possible, we get it back from the path
 		//
 		Status = gBS->OpenProtocol(HandlesFS[i], &gEfiDevicePathProtocolGuid, (VOID **)&DevicePath, ImageHandle, NULL, EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
 		if (!EFI_ERROR(Status))
 		{
 			//  
-			//  On va tester le chemin sur chacune des partitions
+			//  We'll test the path on each of the partitions
 			//
 			Status = gBS->LocateDevicePath(&BlockIoGuid, &DevicePath, &DeviceHandle);
 			if (EFI_ERROR(Status))
@@ -57,7 +57,7 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE* Syste
 			}
 			
 			//  
-			//  On charge notre objet en memoire et on le demarre
+			//  We load our object into memory and start it
 			//
 			Status = gBS->LoadImage(FALSE, ImageHandle, FilePath, NULL, 0, &HandleLoad);
 			if (EFI_ERROR(Status))
